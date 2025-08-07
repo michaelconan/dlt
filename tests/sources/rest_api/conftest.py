@@ -322,6 +322,12 @@ def mock_api_server():
             context.status_code = 401
             return {"error": "Unauthorized"}
 
+        @router.get(r"/date-range(\?.*)?$")
+        def date_range(request, context):
+            start_date = request.qs.get("start_date")[0]
+            end_date = request.qs.get("end_date")[0]
+            return [{"start_date": start_date, "end_date": end_date}]
+
         router.register_routes(m)
 
         yield m

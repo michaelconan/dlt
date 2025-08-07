@@ -115,6 +115,7 @@ Paginators are used to handle paginated responses. The `RESTClient` class comes 
 - [PageNumberPaginator](#pagenumberpaginator) - pagination based on page numbers.
 - [JSONResponseCursorPaginator](#jsonresponsecursorpaginator) - pagination based on a cursor in the JSON response.
 - [HeaderCursorPaginator](#headercursorpaginator) - pagination based on a cursor in the response headers.
+- [DateRangePaginator](#daterangepaginator) - pagination based on a date range.
 
 If the API uses a non-standard pagination, you can [implement a custom paginator](#implementing-a-custom-paginator) by subclassing the `BasePaginator` class.
 
@@ -391,6 +392,42 @@ client = RESTClient(
     base_url="https://api.example.com",
     paginator=HeaderCursorPaginator(cursor_key="NextPageToken")
 )
+#### DateRangePaginator
+
+`DateRangePaginator` handles pagination by iterating over a date range with a specified step.
+
+**Parameters:**
+
+- `start_date`: The start date of the range.
+- `end_date`: The end date of the range.
+- `step`: The step to increment the date by.
+- `start_param`: The name of the query parameter for the start date. Defaults to `"start_date"`.
+- `end_param`: The name of the query parameter for the end date. Defaults to `"end_date"`.
+- `date_format`: The format of the date to be sent in the request. Defaults to `"YYYY-MM-DD"`.
+
+**Example:**
+
+Consider an API endpoint `https://api.example.com/items` that returns items within a date range specified by `start_date` and `end_date` query parameters.
+
+```py
+from dlt.common.time import pendulum
+from dlt.sources.helpers.rest_client import RESTClient
+from dlt.sources.helpers.rest_client.paginators import DateRangePaginator
+
+client = RESTClient(
+    base_url="https://api.example.com",
+    paginator=DateRangePaginator(
+        start_date=pendulum.datetime(2024, 1, 1),
+        end_date=pendulum.datetime(2024, 1, 31),
+        step=pendulum.duration(days=1),
+    )
+)
+
+@dlt.resource
+def get_items_by_date():
+    for page in client.paginate("/items"):
+        yield page
+```
 ```
 
 ### Implementing a custom paginator
